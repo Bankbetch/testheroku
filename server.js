@@ -6,7 +6,7 @@ const ObjectId = require('mongodb').ObjectID
 const url = 'mongodb://admin:a123456@ds213896.mlab.com:13896/ooad'
 const dbName = 'ooad';
 const app = express()
-const port = 5000
+var port = process.env.PORT || 5000;
 // const functions = require("firebase-functions")
 app.use(bodyParser.json())
 app.use(cors({ origin: true }))
