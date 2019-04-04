@@ -6,7 +6,7 @@ const ObjectId = require('mongodb').ObjectID
 const url = 'mongodb://admin:a123456@ds213896.mlab.com:13896/ooad'
 const dbName = 'ooad';
 const app = express()
-var port = process.env.PORT || 5000;
+const port = 4001
 // const functions = require("firebase-functions")
 app.use(bodyParser.json())
 app.use(cors({ origin: true }))
@@ -83,8 +83,13 @@ app.post('/deletedata', (req, res) => {
     mongoClient.connect(url, (err, client) => {
         const db = client.db(dbName)
         console.log("delete")
-        const idRemove = req.body
-        const query = { username: { $in: idRemove } };
+        // const idRemove = req.body
+        // const query = { username: { $in: idRemove } };
+        var idRemove = []
+        req.body.forEach(function (item) {
+            idRemove.push(new ObjectId(item))
+        })
+        const query = { _id: { $in: idRemove } }
         console.log(query)
         db.collection('users').deleteMany(query, (err, obj) => {
             if (err) throw err;
@@ -282,16 +287,43 @@ app.patch('/editroom/', (req, res) => {
         });
     })
 })
+
+app.post('/excel', (req, res) => {
+    mongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
+        const db = client.db(dbName)
+        db.collection('users').findOne({ username: req.body.username }, (err, result) => {
+            if (result === null) {
+
+                // var idRemove = []
+                // req.body.forEach(function (item) {
+                //     idRemove.push(item)
+                // })
+                // const query = { idRemove }
+
+                const query = {
+                    name: req.body.name,
+                    surname: "test",
+                    username: req.body.username,
+                    password: req.body.password,
+                    types: req.body.types,
+                }
+                // req.body.forEach(function (item) {
+                //     newUser.push(query)
+                // })
+                console.log(query)
+                db.collection('users').insertOne(query, (err, result) => {
+                    if (err) throw err
+                    client.close()
+                    res.json({ status: true })
+                })
+            } else {
+                res.json({ status: false })
+                client.close()
+            }
+        });
+    });
+})
+
 app.listen(port, () => {
     console.log(`App listening on ${port}`)
 })
-
-// const api = functions.https.onRequest((request, response) => {
-//     if (!request.path) {
-//       request.url = `/${request.url}` // prepend '/' to keep query params if any
-//     }
-//     return api(request, response)
-//   })
-//   module.exports = {
-//     api
-//   }
